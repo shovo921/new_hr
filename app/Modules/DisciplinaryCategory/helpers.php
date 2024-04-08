@@ -1,0 +1,5 @@
+<?php
+
+/**
+ *	DisciplinaryCategory Helpers
+ */

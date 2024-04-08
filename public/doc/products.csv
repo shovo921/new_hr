@@ -1,0 +1,4 @@
+name,accountsID,price_type,stock_type,stock_id,description,gauge,available_qty,price,per,unit,status
+NP1,AT000156,N,P,CCLD714PCMHSNO12,"LD Wht 7""x14"" Ptd CMHS # 12",0.07,"50,000",1.1,1000,BAGS,A
+NP1,AT000156,S,P,PPCPTAPE1000MTRS,PP Clear Packing Tape 48mm x 1000mtrs,0,60,2,1,ROLLS,A
+NP1,AT000425,N,P,RBPLDP50100DW,White Ptd 50x100mts Wrap,0.05,1,3,1,ROLLS,A

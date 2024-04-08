@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  web:
+    container_name: padma-hrms
+    image: roy95/php74-orcl:v1.0
+    hostname: padma-hrms
+    ports:
+      - "82:80"
+    volumes:
+      - "./:/var/www/html"
+
+      

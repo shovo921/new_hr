@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Modules\Attendance\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+use App\Modules\Attendance\Models\Attendance;
+
+use DB;
+use PDO;
+
+class AttendanceController extends Controller
+{
+    public function __construct(){
+        $_SESSION['MenuActive'] = 'attendance';
+    }
+
+    /**
+     * Display the module all employee Attendance
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request) {
+        $_SESSION['SubMenuActive'] = 'employee-attendance';
+
+    	$attendanceInfo = $this->__allAttendanceFilter($request);
+
+        /*$today = date('d-M-Y');
+
+        $sql = "SELECT A.EMPLOYEE_ID,PADMA_HRM.FXN_GET_EMPLOYEE_NAME(A.EMPLOYEE_ID) AS EMP_NAME
+          ,PADMA_HRM.FXN_GET_DESIGNATION_NAME(B.DESIGNATION_ID) AS DESIG_NAME
+          ,PADMA_HRM.FXN_GET_BRANCH_NAME(P.BRANCH_ID) AS BRANCH_NAME
+          ,PADMA_HRM.FXN_GET_DIVISION_NAME(P.BR_DIVISION_ID ) AS DIVISION_NAME 
+          ,A.ATTENDANCE_DATE,MIN(A.IN_TIME) as IN_TIME, MAX(A.IN_TIME) AS OUT_TIME, A.NODE_ID, A.LOCATION, A.MODIFY_BY, A.MODIFY_DATE, A.CREATED_AT 
+          from  EMPLOYEE_ATTAENDANCES A, EMPLOYEE_POSTING P, EMPLOYEE_DETAILS B
+          where 
+          A.EMPLOYEE_ID = P.EMPLOYEE_ID(+)
+          AND A.EMPLOYEE_ID = B.EMPLOYEE_ID(+)
+          AND A.ATTENDANCE_DATE = '$today'
+         group by  A.EMPLOYEE_ID,B.DESIGNATION_ID,P.BRANCH_ID,P.BR_DIVISION_ID, A.ATTENDANCE_DATE,A.NODE_ID,A.LOCATION,A.MODIFY_BY,A.MODIFY_DATE,A.CREATED_AT";
+        $attendanceInfo = DB::select($sql);*/
+
+        return view("Attendance::index", compact('attendanceInfo'));
+     }
+
+    /**
+     * Display the module all employee Attendance filter
+     *
+     * @return \Illuminate\Http\Response
+     */
+    private function __allAttendanceFilter($request) {
+        $conn = connectOracle();
+
+        $branch = null;
+        $employee_id = null;
+        $dateFrom = date('d-M-Y'); //'08-Jun-2021';
+        $dateTo = date('d-M-Y'); ///'08-Jun-2021';
+
+        if ($request->filled('branch_id')) {
+            $branch = $request->branch_id;
+        }
+        if ($request->filled('employee_id')) {
+            $employee_id = $request->employee_id;
+        }
+
+        if ($request->filled('from_date')) {
+            $dateFrom = $request->from_date;
+        }
+        if ($request->filled('to_date')) {
+            $dateTo = $request->to_date;
+        }
+
+        $sql = 'BEGIN PAD_HRMS.SP_ATTENDANCE_REPORT(:pbranch_id, :pemp_id,:pdt_from,:pdt_to, :OUTPUT_CUR); END;';
+
+        //Statement does not change
+        $stmt = oci_parse($conn,$sql);                     
+        oci_bind_by_name($stmt,':pbranch_id',$branch,10);
+        oci_bind_by_name($stmt,':pemp_id',$employee_id,20);
+        oci_bind_by_name($stmt,':pdt_from',$dateFrom,25);
+        oci_bind_by_name($stmt,':pdt_to',$dateTo,25);   
+
+        //But BEFORE statement, Create your cursor
+        $cursor = oci_new_cursor($conn);
+
+        // On your code add the latest parameter to bind the cursor resource to the Oracle argument
+        oci_bind_by_name($stmt,":OUTPUT_CUR", $cursor,-1,OCI_B_CURSOR);
+
+        // Execute the statement as in your first try
+        oci_execute($stmt);
+
+        // and now, execute the cursor
+        oci_execute($cursor);
+
+        $allAttendances = [];
+        // Use OCIFetchinto in the same way as you would with SELECT
+        while ($data = oci_fetch_assoc($cursor)) {
+            array_push($allAttendances, $data);
+        }
+
+        return collect($allAttendances);
+    }
+}

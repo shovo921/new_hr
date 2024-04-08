@@ -1,0 +1,5 @@
+<?php
+
+/**
+ *	BrDepartment Helpers
+ */

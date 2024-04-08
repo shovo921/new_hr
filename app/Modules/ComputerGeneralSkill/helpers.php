@@ -1,0 +1,5 @@
+<?php
+
+/**
+ *	ComputerGeneralSkill Helpers
+ */
